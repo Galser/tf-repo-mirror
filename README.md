@@ -31,6 +31,9 @@ To learn more about the mentioned above tools and technologies - please check se
     export CLOUDFLARE_ZONE_API_TOKEN=YOUR_TOKEN_HERE
     export CLOUDFLARE_DNS_API_TOKEN=YOUR_TOKEN_HERE
     ```
+    
+## Define domain
+
 - Clone this repo (*use the tools of your choice*)
 - Open the folder with cloned repo
 - Define your domain name in [variables.tf](variables.tf), edit on 2-nd line, following block : 
@@ -39,6 +42,9 @@ To learn more about the mentioned above tools and technologies - please check se
     default = "guselietov.com"
   }
   ```
+  
+## Deploy infrastructure  
+
 - From inside folder with cloned repo init Terraform by executing : 
 
 ```
@@ -59,7 +65,7 @@ Execution will take some time, and at the very end of the output you should see 
 Outputs:
 ```
 
-# Test of local `terraform init` against new mirror
+## Test of local `terraform init` against new mirror
 
 For the local test in folder `mirror-test` we have pre-defined some files : 
     + `providers.tf` - with some providers defined
@@ -69,7 +75,7 @@ In order to perform test :
 - Export TF_CLI_CONFIG_FILE - to temporary override global : `export TF_CLI_CONFIG_FILE=${FULL_PATH_HERE_TO_REPO_CLONE}/mirror-test/test.tfc`
 - run `terraform init` , check next section for example of output
 
-## TEST - example of Terraform init with `TF_LOG` set to `DEBUG` so the installation of providers would be visible : 
+### Log of test - example of Terraform init with `TF_LOG` set to `DEBUG` so the installation of providers would be visible : 
 
 ```bash
 export TF_LOG=DEBUG; terraform init
