@@ -32,7 +32,7 @@ To learn more about the mentioned above tools and technologies - please check se
     export CLOUDFLARE_DNS_API_TOKEN=YOUR_TOKEN_HERE
     ```
     
-## Define domain
+## Define config and init Terraform
 
 - Clone this repo (*use the tools of your choice*)
 - Open the folder with cloned repo
@@ -42,15 +42,15 @@ To learn more about the mentioned above tools and technologies - please check se
     default = "guselietov.com"
   }
   ```
-  
-## Deploy infrastructure  
-
 - From inside folder with cloned repo init Terraform by executing : 
 
 ```
 terraform init
 ```
 Example output can be found here : [terraform_init.md](terraform_init.md)
+
+  
+## Deploy infrastructure  
 
 - Now let's spin up everything, by executing :
 
