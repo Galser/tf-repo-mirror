@@ -1,18 +1,18 @@
 # tf-repo-mirror
-Code for testing TF network mirror technique that arrived with TF 0.13. Based on Nginx module 
+Code for testing TF network mirror technique that arrived with TF 0.13. Based on the Nginx module 
 
 # Requirements
 
-This repository assumes general knowledge about Terraform and Terrafrom CLI v0.14.x , if not, please get yourself accustomed first by going through [getting started guide for Terraform](https://learn.hashicorp.com/terraform?track=getting-started#getting-started). We also going to use AWS EC2 as our infrastructure provider.
+This repository assumes general knowledge about Terraform and Terraform CLI v0.14.x , if not, please get yourself accustomed first by going through [getting started guide for Terraform](https://learn.hashicorp.com/terraform?track=getting-started#getting-started). We also going to use AWS EC2 as our infrastructure provider.
 
-Please have TF v 0.14.X installed in advance. Version 0.13 and other(s) below it are not going to work with CLI configuraiton file override.
+Please have TF v 0.14.X installed in advance. Version 0.13 and other(s) below it are not going to work with CLI configuration file override.
 
 To learn more about the mentioned above tools and technologies - please check section [Technologies near the end of the README](#technologies)
 
 # How-to
 
 ## Prepare authentication credentials
-- Beforehand, you will need to have SSH RSA key available at the default location :
+- Beforehand, you will need to have an SSH RSA key available at the default location :
  - `~/.ssh/id_rsa` and `~/.ssh/id_rsa.pub`
  > This key is going to be used later to connect to the instance where TFE will be running.
  
@@ -62,10 +62,24 @@ Example output can be found here : [terraform_apply.md](terraform_apply.md)
 Execution will take some time, and at the very end of the output you should see something similar to : 
 
 ```bash
+...
+Apply complete! Resources: 24 added, 0 changed, 0 destroyed.
+
 Outputs:
+
+backend_fqdn = "tf-repo-mirror-1_backend.guselietov.com"
+cert_url = "https://acme-v02.api.letsencrypt.org/acme/cert/041d238edbc01f44a366d635899fa3d017ca"
+full_site_name = "tf-repo-mirror-1.guselietov.com"
+loadbalancer_fqdn = "ag-clb-tf-repo-mirror-1-1100703919.eu-central-1.elb.amazonaws.com"
+public_dns = [
+  "ec2-18-156-200-76.eu-central-1.compute.amazonaws.com",
+]
+public_ips = [
+  "18.156.200.76",
+]
 ```
 
-## Test of local `terraform init` against new mirror
+## Test of local `terraform init` against a new mirror
 
 For the local test in folder `mirror-test` we have pre-defined some files : 
     + `providers.tf` - with some providers defined
@@ -74,8 +88,9 @@ In order to perform test :
 - Change folder to the `mirror-test` in the root of the repo
 - Export TF_CLI_CONFIG_FILE - to temporary override global : `export TF_CLI_CONFIG_FILE=${FULL_PATH_HERE_TO_REPO_CLONE}/mirror-test/test.tfc`
 - run `terraform init` , check next section for example of output
+- When you are satisified with results - return null (empty) value for the TF_CLI_CONFIG_FILE by executing : `export TF_CLI_CONFIG_FILE="" && unset TF_CLI_CONFIG_FILE`
 
-### Log of test - example of Terraform init with `TF_LOG` set to `DEBUG` so the installation of providers would be visible : 
+### Log of the test - an example of Terraform init with `TF_LOG` set to `DEBUG` so the installation of providers would be visible : 
 
 ```bash
 export TF_LOG=DEBUG; terraform init
@@ -153,11 +168,13 @@ From what may interest us in the log above is :
     + Finding package URL : `2020/12/24 15:37:27 [DEBUG] Finding package URL for registry.terraform.io/cloudflare/cloudflare v2.14.0 on darwin_amd64 via network mirror https://tf-repo-mirror-1.guselietov.com/`
     + Downloading of the specific version meta-info : `2020/12/24 15:37:27 [DEBUG] GET https://tf-repo-mirror-1.guselietov.com/registry.terraform.io/cloudflare/cloudflare/2.14.0.json`
     + Verifying checksum and installing from that URL : `- Installed cloudflare/cloudflare v2.14.0 (verified checksum` 
-- Return null (empty) value for the TF_CLI_CONFIG_FILE by executing : `export TF_CLI_CONFIG_FILE="" && unset TF_CLI_CONFIG_FILE`
+
 
 ## Clean-up 
 
-Do not forget to destroy your infra after test in order to not waste money on resource by running `terrafrom destroy --auto-approve` from the roor of the repo clone.
+Do not forget to destroy your infra after test in order to not waste money on resources by running `terraform destroy --auto-approve` from the root of the repo clone.
+
+Example of destroy log can be found here :  [terraform_destroy.md](terraform_destroy.md)
 
 
 # Run logs
@@ -165,15 +182,16 @@ Do not forget to destroy your infra after test in order to not waste money on re
 - terraform init : [terraform_init.md](terraform_init.md)
 - terraform apply : [terraform_apply.md](terraform_apply.md)
 - terraform destroy  : [terraform_destroy.md](terraform_destroy.md)
+- Nginx access log excerpt corresponding to the time of Terraform init used in the test above : [nginx.log](nginx.log)
 
 
 # Notes
 
 ## Details on `terraform providers mirror`
 
-Original manual located here : https://www.terraform.io/docs/commands/providers/mirror.html
+Original manual located here: https://www.terraform.io/docs/commands/providers/mirror.html
 
-Note - We will need (in code to create folder manually as `mirror-content` if its not exist yet : `mkdir mirror-content` (*`terraform providers mirror` gonna fail if that folder does not exists in advance*)
+Note - We will need (in code to create the folder manually as `mirror-content` if it does not exist yet: `mkdir mirror-content` (*`terraform providers mirror` gonna fail if that folder does not exist in advance*)
 
 
 ## SSL Certificates and Go TLS library bug in macOS Catalina   
@@ -218,11 +236,11 @@ This issue might describe a less "magic" approach to my workaround golang/go#246
  
 3. **This project for virtualization** uses **AWS EC2** - Amazon Elastic Compute Cloud (Amazon EC2 for short) - a web service that provides secure, resizable compute capacity in the cloud. It is designed to make web-scale cloud computing easier for developers. You can read in details and create a free try-out account if you don't have one here : [Amazon EC2 main page](https://aws.amazon.com/ec2/)
 
-4. **Nginx stands apart - as it will be downloaded and installed automatically during the provision.** Nginx is an open source HTTP Web server and reverse proxy server.In addition to offering HTTP server capabilities, Nginx can also operate as an IMAP/POP3 mail proxy server as well as function as a load balancer and HTTP cache server. You can get more information about it  - check [official website here](https://www.nginx.com)  
+4. **Nginx stands apart - as it will be downloaded and installed automatically during the provision.** Nginx is an open source HTTP Web server and reverse proxy server. In addition to offering HTTP server capabilities, Nginx can also operate as an IMAP/POP3 mail proxy server as well as function as a load balancer and HTTP cache server. You can get more information about it  - check [official website here](https://www.nginx.com)  
 
 5. **Cloudflare**, - is an American web infrastructure and website security company, providing content delivery network services, DDoS mitigation, Internet security, and distributed domain name server services. More information can be found here: https://www.cloudflare.com/
 
-6. **Let'sEncrypt** - Let's Encrypt is a non-profit certificate authority run by Internet Security Research Group that provides X.509 certificates for Transport Layer Security encryption at no charge. The certificate is valid for 90 days, during which renewal can take place at any time. You cna find out more on their [official page](https://letsencrypt.org/)
+6. **Let'sEncrypt** - Let's Encrypt is a non-profit certificate authority run by Internet Security Research Group that provides X.509 certificates for Transport Layer Security encryption at no charge. The certificate is valid for 90 days, during which renewal can take place at any time. You can find out more on their [official page](https://letsencrypt.org/)
 
 # TODO
 
@@ -230,8 +248,8 @@ This issue might describe a less "magic" approach to my workaround golang/go#246
 - [x] tune security group rules (allow incoming HTTPS)
 - [x] use Nginx module from earlier
 - [x] deploy
-- [x] test for a general accesebility
+- [x] test for a general accessibility
 - [x] grab some content from our repo
 - [x] create test code
-- [x] run test code localy
+- [x] run test code locally
 - [x] update README
