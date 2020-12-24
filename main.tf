@@ -37,50 +37,59 @@ module "nginxweb" {
 }
 
 
-# Instance
-/* resource "aws_instance" "ptfe" {
-  ami                    = var.amis[var.region]
-  instance_type          = "${var.instance_type}"
-  subnet_id              = "${module.vpc_aws.subnet_id}"
-  vpc_security_group_ids = ["${module.vpc_aws.security_group_id}"]
-  key_name               = "${aws_key_pair.ptfe-key.id}"
-
-  root_block_device {
-    volume_size = 40
+# Create local mirror
+resource "null_resource" "make_providers_local_mirror" {
+  triggers = {
+    instances_ids = join(",",module.nginxweb.id.*)
   }
-
-  tags = {
-    "Name"      = "ptfe-prodmount-2-andrii",
-    "andriitag" = "true",
-    "learntag"  = "${var.learntag}"
+  provisioner "local-exec" {
+    command = "mkdir -p ${var.mirror_path};  terraform providers mirror ${var.mirror_path}"
   }
+}
 
-  volume_tags = {
-    "Name"      = "ptfe-prodmount-2-andrii",
-    "andriitag" = "true",
+# Chown WWW folder to ubuntu
+resource "null_resource" "prepare_folder" {
+  triggers = {
+    instances_ids = join(",",module.nginxweb.id.*)
   }
 
   connection {
     user        = "ubuntu"
     type        = "ssh"
-    private_key = "${file("~/.ssh/id_rsa")}"
-    host        = self.public_ip
+    private_key = file("~/.ssh/id_rsa")
+    host        = element(module.nginxweb.public_ips.*,0)
   }
 
   provisioner "remote-exec" {
-    script = "scripts/provision.sh"
-  }
-
-  provisioner "file" {
-    source      = "scripts/mount-ebs.sh"
-    destination = "/tmp/mount-ebs.sh"
-  }
-
-  provisioner "file" {
-    source      = "scripts/delete_all.sh"
-    destination = "/tmp/delete_all.sh"
+    inline = [
+      "sudo chown -R ubuntu:ubuntu /var/www/html",
+    ]   
   }
 
 }
 
-*/
+# Copy fiels over SSH (scp really)
+resource "null_resource" "copy_mirror_to_server" {
+  triggers = {
+    instances_ids = join(",",module.nginxweb.id.*)
+  }
+
+  # explicit depends on local mirror
+  depends_on = [ 
+    null_resource.make_providers_local_mirror,
+    null_resource.prepare_folder
+  ]
+
+  connection {
+    user        = "ubuntu"
+    type        = "ssh"
+    private_key = file("~/.ssh/id_rsa")
+    host        = element(module.nginxweb.public_ips.*,0)
+  }
+
+  provisioner "file" {
+    source = "${var.mirror_path}/"
+    destination = "/var/www/html"
+  }
+
+}
