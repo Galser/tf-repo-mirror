@@ -21,3 +21,7 @@ output "cert_bundle" {
   description = "Full certificate bundle, for example for installing in the system that does not recognize Let'sEncrypt"
   value       = "${local.cert_bundle}"
 }
+
+output "chain" {
+	value = "${acme_certificate.certificate.certificate_pem}${acme_certificate.certificate.issuer_pem}"
+}

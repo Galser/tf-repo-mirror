@@ -43,3 +43,7 @@ variable "instance_type" {
 variable "ssh_key_path" {
   default = "~/.ssh/id_rsa.pub"
 }
+
+variable "mirror_path" {
+  default = "mirror-content"
+}

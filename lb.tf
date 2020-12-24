@@ -14,18 +14,26 @@ resource "aws_elb" "mirror_lb" {
     interval            = 30
   }
 
-  listener {
+/*  listener {
     lb_port           = "443"
     lb_protocol       = "tcp"
     instance_port     = "443"
     instance_protocol = "tcp"
-  }
+  } */
+
   listener {
+    lb_port           = "443"
+    lb_protocol       = "https"
+    ssl_certificate_id = aws_iam_server_certificate.cert.arn
+    instance_port     = "80"
+    instance_protocol = "http"
+  }  
+  /* listener {
     lb_port           = "80"
     lb_protocol       = "tcp"
     instance_port     = "80"
     instance_protocol = "tcp"
-  }
+  } */
 
   instances                   = module.nginxweb.id
   cross_zone_load_balancing   = true
